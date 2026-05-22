@@ -83,6 +83,30 @@ Evidence
 
 Findings include severity, confidence, remediation, business impact, tested controls, and redacted evidence snippets where available.
 
+## CI/CD
+
+This repository includes GitHub Actions workflows for continuous integration and tag-based releases:
+
+- CI runs on pull requests and pushes to `main`.
+- CI checks Node.js 20 and 22, runs linting, typechecking, tests, the local selftest, dependency audit, and a Docker build.
+- Dependabot opens weekly update pull requests for npm dependencies and GitHub Actions.
+- Release/CD runs when a version tag such as `v12.0.1` is pushed.
+- Releases create an npm package tarball, publish a Docker image to GitHub Container Registry, and attach the package artifact to a GitHub release.
+
+Create a release:
+
+```bash
+npm version patch
+git push origin main --follow-tags
+```
+
+The release workflow publishes the container as:
+
+```text
+ghcr.io/unknownt12/websec-sentinel:v12.0.1
+ghcr.io/unknownt12/websec-sentinel:latest
+```
+
 ## What It Does
 
 - Produces JSON, Markdown, HTML, and SARIF reports for security review and CI/CD gates.
