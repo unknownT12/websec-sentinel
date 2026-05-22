@@ -89,9 +89,10 @@ This repository includes GitHub Actions workflows for continuous integration and
 
 - CI runs on pull requests and pushes to `main`.
 - CI checks Node.js 20 and 22, runs linting, typechecking, tests, the local selftest, dependency audit, and a Docker build.
-- Dependabot opens weekly update pull requests for npm dependencies and GitHub Actions.
 - Release/CD runs when a version tag such as `v12.0.1` is pushed.
 - Releases create an npm package tarball, publish a Docker image to GitHub Container Registry, and attach the package artifact to a GitHub release.
+
+Before enabling required branch protection checks, confirm the Actions workflow is green in GitHub. If GitHub Actions is blocked by an account or billing issue, required checks will fail before the workflow can start.
 
 Create a release:
 
