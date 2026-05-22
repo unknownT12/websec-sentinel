@@ -1,4 +1,97 @@
-# WebSec Sentinel v12
+# WebSec Sentinel
+
+[![CI](https://github.com/unknownT12/websec-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/unknownT12/websec-sentinel/actions/workflows/ci.yml)
+
+Defensive web security assessment CLI for authorized testing, CI gates, and evidence-based reports.
+
+WebSec Sentinel crawls approved targets, maps routes/forms/headers/API surfaces, runs safe validation checks, and produces JSON, Markdown, HTML, and SARIF reports with coverage-aware scoring.
+
+## Quick Start
+
+```bash
+npm install
+npm test
+npm run scan -- https://example.com --mode passive --save --format markdown,json
+```
+
+Requires Node.js 20+.
+
+## Short Demo
+
+Run the built-in local fixture to see the scanner work without touching a real target:
+
+```bash
+npm run selftest
+```
+
+Run a passive scan against a site you are allowed to test:
+
+```bash
+npm run scan -- https://example.com \
+  --mode passive \
+  --checks tls,headers,csp,cookies,secrets \
+  --save \
+  --format markdown,json
+```
+
+## Example Scan Output
+
+Example excerpt from `npm run selftest`:
+
+```text
+WebSec Sentinel v12.0.0
+Target: http://127.0.0.1:48181/login
+Mode: validate | Scope: 127.0.0.1
+Authorization: provided | Client: SelfTest | Assessment: SELFTEST-BOOK-MODEL
+Custom headers: cookie=<redacted>
+Prohibited paths: /logout, /delete, /remove, /reset, /billing, /payment, /admin/delete
+Crawled 11 same-origin page(s). Forms: 3 | Links: 21 | Route hints: 12
+Running productengine... ok
+Running testvectors... ok
+Running professionalmodel... ok
+Running bookscope... ok
+Running stateflow... ok
+Running parammodel... 1 issue(s)
+Running testmodel... 1 issue(s)
+Running enginemodel... ok
+Running evidencequality... ok
+Running coverage... ok
+Running assurance... ok
+Running differential... 1 issue(s)
+Running deepassess... 3 issue(s)
+Running inputvalidation... ok
+Running mutation... ok
+
+Summary
+- Grade: F (25/100)
+- Weighted risk: 75
+- Coverage: 100/100
+- Surface: 11 pages, 3 forms, 21 links, 12 route hints
+- Findings: 0 critical, 3 high, 1 medium, 0 low, 7 info, 9 passed
+
+Top findings
+- Authenticated surface may be reachable without authentication
+- IDOR-prone routes observed without enough role coverage
+- State-changing forms lack obvious CSRF markers
+
+Evidence
+- reports/selftest/websec-<timestamp>.json
+- reports/selftest/websec-<timestamp>.md
+- reports/selftest/ledger.har.json
+- reports/selftest/replay-redacted.sh
+```
+
+Findings include severity, confidence, remediation, business impact, tested controls, and redacted evidence snippets where available.
+
+## What It Does
+
+- Produces JSON, Markdown, HTML, and SARIF reports for security review and CI/CD gates.
+- Scores both risk and coverage so shallow scans cannot look more complete than they are.
+- Supports passive, standard, and explicitly authorized validation modes.
+- Maps links, forms, scripts, route hints, headers, cookies, API surfaces, and authentication signals.
+- Includes safe checks for headers, TLS, CSP, CORS, cookies, cache, auth surfaces, JWT exposure, secrets, DOM risks, and application workflow signals.
+- Supports optional Playwright browser crawling for JavaScript-heavy applications.
+- Keeps generated reports, local evidence, build output, dependencies, IDE metadata, and environment files out of Git by default.
 
 ## v12.0 External Benchmark Evidence
 
