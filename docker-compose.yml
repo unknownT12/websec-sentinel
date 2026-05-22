@@ -1,0 +1,10 @@
+services:
+  websec-sentinel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: websec-sentinel:local
+    volumes:
+      - ./reports:/app/reports
+    # Keep this as help by default. Pass scan args after `--` from the command line.
+    command: ["--help"]

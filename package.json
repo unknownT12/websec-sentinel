@@ -1,0 +1,88 @@
+{
+  "name": "websec-sentinel",
+  "version": "12.0.0",
+  "description": "Defensive web security assessment CLI with safe validation checks, coverage scoring, evidence artifacts, role comparison, plugin rules, and benchmark reporting.",
+  "type": "module",
+  "bin": {
+    "websec-sentinel": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "npm run build --silent && node dist/index.js",
+    "scan": "npm run build --silent && node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist reports coverage",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs",
+    "lint": "tsc --noEmit --pretty false",
+    "audit:deps": "npm audit --audit-level=moderate",
+    "selftest": "npm run build && node tools/run-selftest.mjs",
+    "benchmark": "npm run build && node tools/run-benchmark.mjs",
+    "external-benchmark": "npm run build && node tools/run-external-benchmark.mjs",
+    "schedule": "npm run build && node tools/run-schedule.mjs"
+  },
+  "keywords": [
+    "security",
+    "scanner",
+    "owasp",
+    "web-security",
+    "typescript",
+    "cli",
+    "security-assessment",
+    "ci-cd",
+    "sarif",
+    "risk-scoring",
+    "methodology",
+    "application-security",
+    "coverage-scoring",
+    "baseline-comparison",
+    "authorized-assessment",
+    "evidence-model",
+    "scanner-model",
+    "test-model",
+    "differential-testing",
+    "book-scoped-assessment",
+    "professional-model",
+    "product-engine-model",
+    "control-objective-model",
+    "workflow-model",
+    "parameter-model",
+    "benchmarking",
+    "browser-crawling",
+    "role-comparison",
+    "plugin-rules",
+    "false-positive-control",
+    "confirmed-validation",
+    "benchmark-precision-recall",
+    "browser-workflow-crawling",
+    "external-benchmark-evidence",
+    "juice-shop-benchmark",
+    "dvwa-benchmark",
+    "webgoat-benchmark",
+    "tp-fp-fn-metrics",
+    "case-study-evidence"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "peerDependencies": {
+    "playwright": "^1.57.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "typescript": "^6.0.3"
+  }
+}

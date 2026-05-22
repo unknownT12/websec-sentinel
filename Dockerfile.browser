@@ -1,0 +1,21 @@
+# Browser-enabled WebSec Sentinel runtime.
+# Use this image when you need --browser-crawl, JavaScript execution, and login automation.
+FROM mcr.microsoft.com/playwright:v1.57.0-noble
+
+WORKDIR /app
+ENV NODE_ENV=development \
+    npm_config_fund=false \
+    npm_config_audit=false
+
+COPY package*.json ./
+RUN npm ci && npm i playwright@1.57.0 --no-save
+COPY tsconfig.json ./
+COPY src ./src
+COPY tools ./tools
+COPY README.md LICENSE ./
+COPY docs ./docs
+COPY examples ./examples
+RUN npm run build && mkdir -p /app/reports && chown -R pwuser:pwuser /app
+USER pwuser
+ENTRYPOINT ["node", "dist/index.js"]
+CMD ["--help"]

@@ -1,0 +1,17 @@
+{
+  "targetName": "DVWA",
+  "targetFamily": "dvwa",
+  "version": "user-supplied-local-lab",
+  "notes": "Run against an authorized local DVWA lab. Use a low-privilege lab account only.",
+  "surfaces": [
+    { "id": "login", "description": "DVWA login workflow", "urlPattern": "login|password", "required": true },
+    { "id": "sqli", "description": "SQL injection training page route", "urlPattern": "sqli|SQL Injection", "parameter": "id", "required": true },
+    { "id": "xss", "description": "XSS training page route", "urlPattern": "xss|XSS", "parameter": "name", "required": true },
+    { "id": "csrf", "description": "CSRF training page route", "urlPattern": "csrf|CSRF", "required": true },
+    { "id": "upload", "description": "Upload training page route", "urlPattern": "upload|file", "required": false }
+  ],
+  "expectedFindings": [
+    { "id": "reflected-input-validation", "title": "Reflected input validation should be confirmed on reflected XSS training surface", "resultIds": ["vulnvalidation.confirmed-reflection", "inputvalidation.safe-canary-reflection"], "urlPattern": "xss|name=", "parameter": "name", "required": true },
+    { "id": "verbose-error-or-sqli-surface", "title": "Verbose error or SQLi-like training surface should be discovered safely", "resultIds": ["vulnvalidation.confirmed-verbose-error", "benchmark.coverage-below-professional-threshold", "externalbenchmark.evidence-detail"], "urlPattern": "sqli|id=", "parameter": "id", "required": true }
+  ]
+}

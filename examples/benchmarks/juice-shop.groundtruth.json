@@ -1,0 +1,18 @@
+{
+  "targetName": "OWASP Juice Shop",
+  "targetFamily": "juice",
+  "version": "user-supplied-local-lab",
+  "notes": "Run only against an authorized local Juice Shop instance. These expectations focus on safe discovery/validation surfaces, not destructive exploitation.",
+  "surfaces": [
+    { "id": "spa-root", "description": "SPA root and script surface", "urlPattern": "/|main\\.|runtime\\.|polyfills\\.", "required": true },
+    { "id": "login-surface", "description": "Login/authentication workflow", "urlPattern": "login|email|password", "required": true },
+    { "id": "rest-api-surface", "description": "REST/API surface", "urlPattern": "/rest/|/api/", "required": true },
+    { "id": "search-surface", "description": "Search/input surface", "urlPattern": "search|q=|products", "parameter": "q", "required": true },
+    { "id": "basket-workflow", "description": "Basket/order workflow route family", "urlPattern": "basket|cart|checkout|order", "required": false }
+  ],
+  "expectedFindings": [
+    { "id": "missing-hsts", "title": "Transport policy weakness may be present in local benchmark", "resultIds": ["tls.hsts-missing", "headers.hsts-missing"], "validationType": "headers", "required": false },
+    { "id": "search-reflection-or-input-surface", "title": "Search or reflected input validation surface should be discovered", "resultIds": ["vulnvalidation.confirmed-reflection", "inputvalidation.safe-canary-reflection", "parammodel.parameterized-attack-surface"], "urlPattern": "search|q=", "parameter": "q", "required": true },
+    { "id": "api-surface-signal", "title": "API route review should identify REST/API exposure", "resultIds": ["api.route-hints-observed", "externalbenchmark.evidence-detail", "benchmark.coverage-below-professional-threshold"], "urlPattern": "/rest/|/api/", "required": true }
+  ]
+}

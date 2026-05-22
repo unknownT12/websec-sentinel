@@ -1,0 +1,15 @@
+{
+  "targetName": "WebGoat",
+  "targetFamily": "webgoat",
+  "version": "user-supplied-local-lab",
+  "notes": "Run against an authorized local WebGoat instance. WebGoat often requires browser login automation for meaningful coverage.",
+  "surfaces": [
+    { "id": "login", "description": "Login workflow", "urlPattern": "login|username|password", "required": true },
+    { "id": "lesson-routes", "description": "Lesson route/workflow surface", "urlPattern": "lesson|WebGoat|attack", "required": true },
+    { "id": "api-surface", "description": "API/backend lesson calls", "urlPattern": "/WebGoat/|/api/|service", "required": false }
+  ],
+  "expectedFindings": [
+    { "id": "authenticated-workflow-coverage", "title": "Authenticated lesson workflow coverage should be achieved", "resultIds": ["proofmetrics.coverage-detail", "browsermodel.browser-crawl-executed", "coverage.authenticated-coverage-present"], "urlPattern": "lesson|WebGoat", "required": true },
+    { "id": "role-or-access-boundary-review", "title": "Access-control or workflow boundary review should execute", "resultIds": ["rolecompare.role-differential-executed", "differential.potential-auth-boundary", "testmodel.high-value-hypotheses-generated"], "required": false }
+  ]
+}

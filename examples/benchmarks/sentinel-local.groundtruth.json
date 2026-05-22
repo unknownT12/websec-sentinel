@@ -1,0 +1,19 @@
+{
+  "targetName": "Sentinel Local Benchmark Fixture",
+  "targetFamily": "sentinel",
+  "version": "v12-controlled-local-fixture",
+  "notes": "Used only to verify the external benchmark runner mechanics. External known-vulnerable targets still require Juice Shop, DVWA, or WebGoat runs.",
+  "surfaces": [
+    { "id": "login", "description": "Login form", "urlPattern": "/login|password|session", "required": true },
+    { "id": "dashboard", "description": "Dashboard route", "urlPattern": "/dashboard", "required": true },
+    { "id": "search", "description": "Reflected search route", "urlPattern": "/search|q=", "parameter": "q", "required": true },
+    { "id": "redirect", "description": "Redirect route", "urlPattern": "/redirect|next=", "parameter": "next", "required": true },
+    { "id": "error", "description": "Verbose error route", "urlPattern": "/error|debug", "parameter": "debug", "required": true }
+  ],
+  "expectedFindings": [
+    { "id": "confirmed-reflection", "title": "Confirmed reflected input", "resultIds": ["vulnvalidation.confirmed-reflection"], "urlPattern": "/search|q=", "parameter": "q", "required": true },
+    { "id": "confirmed-open-redirect", "title": "Confirmed open redirect", "resultIds": ["vulnvalidation.confirmed-open-redirect"], "urlPattern": "/redirect|next=", "parameter": "next", "required": true },
+    { "id": "confirmed-verbose-error", "title": "Confirmed verbose error", "resultIds": ["vulnvalidation.confirmed-verbose-error"], "urlPattern": "/error|debug", "parameter": "debug", "required": true },
+    { "id": "confirmed-role-boundary-risk", "title": "Confirmed role boundary risk", "resultIds": ["vulnvalidation.confirmed-role-boundary-risk"], "urlPattern": "/dashboard|/admin", "required": true }
+  ]
+}
