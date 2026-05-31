@@ -9,7 +9,12 @@
   "main": "dist/index.js",
   "files": [
     "dist",
+    "docs",
+    "examples",
+    "tools",
+    "schemas",
     "README.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "scripts": {
@@ -25,7 +30,8 @@
     "selftest": "npm run build && node tools/run-selftest.mjs",
     "benchmark": "npm run build && node tools/run-benchmark.mjs",
     "external-benchmark": "npm run build && node tools/run-external-benchmark.mjs",
-    "schedule": "npm run build && node tools/run-schedule.mjs"
+    "schedule": "npm run build && node tools/run-schedule.mjs",
+    "dashboard": "node tools/report-dashboard.mjs"
   },
   "keywords": [
     "security",
@@ -83,6 +89,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
+    "playwright": "^1.60.0",
     "typescript": "^6.0.3"
   }
 }

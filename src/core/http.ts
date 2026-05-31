@@ -19,7 +19,10 @@ function headersToRecord(headers: Headers): Record<string, string> {
 
 export function sameOriginOnly(target: URL, candidate: URL, scope: string[]): boolean {
   const allowed = new Set(scope.map((h) => h.toLowerCase()));
-  return ["http:", "https:"].includes(candidate.protocol) && allowed.has(candidate.hostname.toLowerCase()) && candidate.origin === target.origin;
+  if (!["http:", "https:"].includes(candidate.protocol)) return false;
+  if (!allowed.has(candidate.hostname.toLowerCase())) return false;
+  if (!["http:", "https:"].includes(target.protocol)) return false;
+  return true;
 }
 
 export function safeSnippet(value: string, max = 220): string {
@@ -129,6 +132,12 @@ export async function requestWithExtraHeaders(url: string, options: ScanOptions,
 
 export function getHttpObservations(): HttpObservation[] {
   return [...observations];
+}
+
+export function resetHttpState(): void {
+  lastRequestAt = 0;
+  requestCounter = 0;
+  observations.length = 0;
 }
 
 function shellQuote(value: string): string {

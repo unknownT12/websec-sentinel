@@ -11,7 +11,7 @@
     { "id": "upload", "description": "Upload training page route", "urlPattern": "upload|file", "required": false }
   ],
   "expectedFindings": [
-    { "id": "reflected-input-validation", "title": "Reflected input validation should be confirmed on reflected XSS training surface", "resultIds": ["vulnvalidation.confirmed-reflection", "inputvalidation.safe-canary-reflection"], "urlPattern": "xss|name=", "parameter": "name", "required": true },
-    { "id": "verbose-error-or-sqli-surface", "title": "Verbose error or SQLi-like training surface should be discovered safely", "resultIds": ["vulnvalidation.confirmed-verbose-error", "benchmark.coverage-below-professional-threshold", "externalbenchmark.evidence-detail"], "urlPattern": "sqli|id=", "parameter": "id", "required": true }
+    { "id": "reflected-input-validation", "title": "Reflected input validation should be confirmed on reflected XSS training surface", "resultIds": ["vulnvalidation.confirmed-reflection", "inputvalidation.safe-canary-reflection", "inputvalidation.form-reflection.*", "inputvalidation.reflection.*"], "metricType": "vulnerability", "urlPattern": "xss|name=", "parameter": "name", "required": true },
+    { "id": "verbose-error-or-sqli-surface", "title": "Verbose error or SQLi-like training surface should be discovered safely", "resultIds": ["vulnvalidation.confirmed-verbose-error"], "metricType": "vulnerability", "urlPattern": "sqli|id=", "parameter": "id", "required": true }
   ]
 }

@@ -11,8 +11,8 @@
     { "id": "basket-workflow", "description": "Basket/order workflow route family", "urlPattern": "basket|cart|checkout|order", "required": false }
   ],
   "expectedFindings": [
-    { "id": "missing-hsts", "title": "Transport policy weakness may be present in local benchmark", "resultIds": ["tls.hsts-missing", "headers.hsts-missing"], "validationType": "headers", "required": false },
-    { "id": "search-reflection-or-input-surface", "title": "Search or reflected input validation surface should be discovered", "resultIds": ["vulnvalidation.confirmed-reflection", "inputvalidation.safe-canary-reflection", "parammodel.parameterized-attack-surface"], "urlPattern": "search|q=", "parameter": "q", "required": true },
-    { "id": "api-surface-signal", "title": "API route review should identify REST/API exposure", "resultIds": ["api.route-hints-observed", "externalbenchmark.evidence-detail", "benchmark.coverage-below-professional-threshold"], "urlPattern": "/rest/|/api/", "required": true }
+    { "id": "missing-hsts", "title": "Transport policy weakness may be present in local benchmark", "resultIds": ["tls.hsts-missing", "headers.hsts-missing"], "validationType": "headers", "metricType": "coverage", "required": false },
+    { "id": "search-reflection-or-input-surface", "title": "Search or reflected input validation surface should be discovered", "resultIds": ["vulnvalidation.confirmed-reflection", "inputvalidation.safe-canary-reflection", "inputvalidation.form-reflection.*"], "metricType": "vulnerability", "urlPattern": "search|q=", "parameter": "q", "required": true },
+    { "id": "api-surface-signal", "title": "API route review should identify REST/API exposure", "resultIds": ["api.route-hints-observed"], "metricType": "surface", "urlPattern": "/rest/|/api/", "required": true }
   ]
 }

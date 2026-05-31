@@ -48,7 +48,7 @@ async function clickFirst(page: any, selectors: string[]): Promise<boolean> {
     try {
       const loc = page.locator(selector).first();
       if ((await loc.count()) > 0) {
-        await Promise.allSettled([loc.click({ timeout: 2500 }), page.waitForLoadState("networkidle", { timeout: 8000 })]);
+        await Promise.allSettled([loc.click({ timeout: 2500 }), page.waitForLoadState("domcontentloaded", { timeout: 3000 }), page.waitForTimeout(500)]);
         return true;
       }
     } catch {}
@@ -131,7 +131,7 @@ async function safeExploreClicks(page: any, target: URL, options: ScanOptions, q
         const item = page.locator(selector).nth(i);
         const text = (await item.innerText({ timeout: 1000 }).catch(() => "")).toLowerCase();
         if (/delete|remove|logout|pay|submit|save|update|reset|change password/.test(text)) continue;
-        await Promise.allSettled([item.click({ timeout: 1000 }), page.waitForLoadState('networkidle', { timeout: 3000 })]);
+        await Promise.allSettled([item.click({ timeout: 1000 }), page.waitForLoadState('domcontentloaded', { timeout: 1500 }), page.waitForTimeout(300)]);
         const after = normalize(page.url());
         if (after !== normalize(before) && sameScope(target, after, options) && !queued.has(after)) {
           queued.add(after); queue.push({ url: after, depth: depth + 1 }); added++;
@@ -170,7 +170,8 @@ export async function browserCrawl(target: URL, options: ScanOptions): Promise<{
 
   try {
     if (options.loginUrl && options.loginUsername && options.loginPassword) {
-      await page.goto(options.loginUrl, { waitUntil: 'networkidle', timeout: options.timeoutMs });
+      await page.goto(options.loginUrl, { waitUntil: 'domcontentloaded', timeout: options.timeoutMs });
+      await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => undefined);
       const userFilled = await fillFirst(page, [options.loginUsernameSelector || "", "input[type=email]", "input[name*=user i]", "input[name*=email i]", "input[name*=login i]", "input[name=username]"].filter(Boolean), options.loginUsername);
       const passFilled = await fillFirst(page, [options.loginPasswordSelector || "", "input[type=password]"].filter(Boolean), options.loginPassword);
       const clicked = await clickFirst(page, [options.loginSubmitSelector || "", "button[type=submit]", "input[type=submit]", "button"].filter(Boolean));
@@ -182,7 +183,8 @@ export async function browserCrawl(target: URL, options: ScanOptions): Promise<{
     while (queue.length && pages.length < options.maxPages) {
       const item = queue.shift()!;
       try {
-        const response = await page.goto(item.url, { waitUntil: 'networkidle', timeout: options.timeoutMs });
+        const response = await page.goto(item.url, { waitUntil: 'domcontentloaded', timeout: options.timeoutMs });
+        await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => undefined);
         const snap = await domSnapshot(page, response, page.url(), options, item.depth, `browser-${pages.length + 1}`);
         pages.push(snap);
         for (const next of [...snap.links, ...snap.routeHints]) {

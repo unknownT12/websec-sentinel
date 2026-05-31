@@ -62,17 +62,19 @@ Running deepassess... 3 issue(s)
 Running inputvalidation... ok
 Running mutation... ok
 
+Disclaimer: WebSec Sentinel reports assessment signals. Treat findings as confirmed vulnerabilities only after authorized human validation of evidence, business context, and expected access policy.
+
 Summary
-- Grade: F (25/100)
-- Weighted risk: 75
+- Grade: D (44/100)
+- Weighted risk: 56
 - Coverage: 100/100
 - Surface: 11 pages, 3 forms, 21 links, 12 route hints
-- Findings: 0 critical, 3 high, 1 medium, 0 low, 7 info, 9 passed
+- Findings: 0 critical, 2 high, 1 medium, 1 low, 7 info, 9 passed
 
-Top findings
-- Authenticated surface may be reachable without authentication
-- IDOR-prone routes observed without enough role coverage
-- State-changing forms lack obvious CSRF markers
+Findings by type
+- Risk signals: 3
+- Coverage gaps: 1
+- Informational: 7
 
 Evidence
 - reports/selftest/websec-<timestamp>.json
@@ -116,24 +118,38 @@ ghcr.io/unknownt12/websec-sentinel:latest
 - Maps links, forms, scripts, route hints, headers, cookies, API surfaces, and authentication signals.
 - Includes safe checks for headers, TLS, CSP, CORS, cookies, cache, auth surfaces, JWT exposure, secrets, DOM risks, and application workflow signals.
 - Supports optional Playwright browser crawling for JavaScript-heavy applications.
+- Includes a local dashboard for reviewing saved report history.
 - Keeps generated reports, local evidence, build output, dependencies, IDE metadata, and environment files out of Git by default.
 
 ## v12.0 External Benchmark Evidence
 
 v12 focuses on turning the project from an internal-fixture prototype into a more defensible scanner core. It adds external benchmark evidence against approved local known-vulnerable apps such as OWASP Juice Shop, DVWA, WebGoat, or a custom lab app.
 
-The key change is that benchmark claims now require evidence artifacts:
+The committed benchmark proof inputs are:
 
-- external ground-truth JSON contracts
-- external benchmark runner
+- [Juice Shop ground-truth contract](examples/benchmarks/juice-shop.groundtruth.json)
+- [DVWA ground-truth contract](examples/benchmarks/dvwa.groundtruth.json)
+- [WebGoat ground-truth contract](examples/benchmarks/webgoat.groundtruth.json)
+- [Sentinel local fixture ground-truth contract](examples/benchmarks/sentinel-local.groundtruth.json)
+- [External benchmark runner](tools/run-external-benchmark.mjs)
+- [Internal benchmark runner](tools/run-benchmark.mjs)
+- [V12 external benchmark proof notes](docs/V12_EXTERNAL_BENCHMARK_PROOF.md)
+
+External benchmark runs produce reviewable output artifacts under the selected report directory:
+
+- scanner JSON, Markdown, and SARIF reports
+- `external-benchmark-reachability.json`
+- `external-benchmark-metrics.json`
 - TP / FP / FN metrics
 - precision, recall, and F1 score
-- browser-crawl trace support
-- deeper safe assessment layer for auth-boundary, IDOR-candidate, CSRF, workflow, second-order, and browser-hidden API signals
-- HAR-like request ledger
-- redacted replay file
-- benchmark reachability artifact plus post-report result-ID matching
-- case-study-ready report package
+- JSONL request evidence, HAR-like ledger, and redacted replay file when enabled
+
+Benchmark metric semantics are intentionally strict:
+
+- `metricType: "vulnerability"` counts toward vulnerability TP / FP / FN, precision, recall, and F1.
+- `metricType: "surface"` records route/API/workflow reachability, not vulnerability detection.
+- `metricType: "coverage"` records assessment readiness or evidence quality, not vulnerability detection.
+- Reachability details and coverage gaps do not count as vulnerability true positives.
 
 Run an internal controlled benchmark:
 
@@ -155,32 +171,15 @@ npm run external-benchmark -- \
   --out reports/external-benchmark/juice
 ```
 
-See `docs/V12_EXTERNAL_BENCHMARK_PROOF.md`.
+For release history, see [CHANGELOG.md](CHANGELOG.md).
 
----
+Trust and product-readiness artifacts:
 
-
-## v8.0 Professional Book-Scoped Product Model
-
-v8 focuses on the scanner engine, not the UI. It adds a professional control-objective model, maturity gates, and model-driven safe test cases derived from the uploaded hacking/security books as methodology scope. The scanner now separates prototype-level runs from medium-impact product-level runs using evidence, authenticated-state coverage, application mapping depth, and repeatability.
-
-Useful command:
-
-```bash
-npm run selftest
-```
-
-This runs a local controlled fixture and proves the engine can crawl routes, detect forms/parameters, classify high-value surfaces, and generate safe test cases without destructive exploitation.
-
-
-## v4.0 Assurance Build
-
-This build focuses on measurable testing quality rather than cosmetic UI. It adds coverage contracts, seed URLs, authenticated-assessment requirements, safe input-validation canaries, attack-path reasoning, redacted HAR-like evidence exports, and replay files for manual verification.
-
-Professional scans should use `--require-auth`, `--min-coverage-score`, `--min-pages`, approved `--seed` URLs, and `--prohibited-paths` so the report clearly states whether it has enough evidence to support its grade.
-
-See `docs/V4_PROFESSIONAL_ASSURANCE_UPGRADE.md`.
-
+- [Security policy](SECURITY.md)
+- [Threat model](docs/THREAT_MODEL.md)
+- [Data handling and redaction](docs/DATA_HANDLING.md)
+- [Benchmark proof policy](docs/BENCHMARK_PROOF_POLICY.md)
+- [Report JSON schema](schemas/report.schema.json)
 
 **WebSec Sentinel** is a defensive web security assessment CLI for authorized testing, CI/CD gates, and report generation. It is useful as an assessment aid, but it is not a replacement for a mature DAST platform or expert manual review.
 
@@ -205,17 +204,6 @@ This release moves the system toward a more disciplined assessment workflow: cra
 - Resilience checks for risky HTTP methods, server-error leakage, and sensitive-page cache control.
 - Secret scanning with redacted evidence.
 
-
-## What changed in v2.3
-
-This version directly addresses the weaknesses from the earlier report:
-
-1. **Crawler reliability**: the crawler now uses a browser-like default user agent, extracts normal links, asset links, JavaScript route hints, scripts, titles, and forms, and records request diagnostics when no pages are collected.
-2. **Forms, links, technologies, and routes**: reports now show pages, forms, links, route hints, scripts, technologies, status-code distribution, and tested controls.
-3. **Authenticated testing**: repeated `--header` support remains, but reports now explicitly label whether authenticated coverage was supplied.
-4. **Application-layer validation**: new `appsec` checks safely review CSRF signals, password forms, identifier parameters, reflection canaries, open redirect behavior, and verbose error leakage without destructive exploitation.
-5. **Honest scoring**: grade now includes a coverage penalty and a separate coverage score. A zero-page crawl can no longer produce a polished-looking high-confidence report.
-6. **What did it test?**: terminal, JSON, Markdown, HTML, and SARIF outputs now include tested controls and crawler diagnostics.
 
 ## Safety boundaries
 
@@ -358,6 +346,16 @@ npm run scan -- https://staging.example.com \
 ```
 
 The report includes new, resolved, unchanged, and changed-severity findings.
+
+## Local dashboard
+
+Review saved JSON reports in a local-only dashboard:
+
+```bash
+npm run dashboard -- --reports reports --port 4173
+```
+
+Open `http://127.0.0.1:4173`. The dashboard is for local triage review of saved reports; do not expose it directly to the internet.
 
 ## Project history and triage
 
@@ -604,170 +602,3 @@ docker compose run --rm websec-sentinel https://example.com \
 ```
 
 Reports are saved to the local `reports/` folder.
-
-## v2.4 exceptional testing depth
-
-This build improves testing depth rather than UI. New modules include `methods`, `cache`, `dom`, `access`, and `api`. The crawler can now use `--deep-crawl` to mine same-origin JavaScript for route hints and non-passive scans seed from `robots.txt` / `sitemap.xml`. Reports are coverage-aware so a shallow scan cannot look more impressive than it actually is.
-
-Recommended deep validation command:
-
-```bash
-docker run --rm \
-  -v "$PWD/reports:/app/reports" \
-  websec-sentinel \
-  https://example.com \
-  --mode validate \
-  --authorized \
-  --client "Client Name" \
-  --assessment-id "AUTH-2026-001" \
-  --tester "Assessment Team" \
-  --scope example.com \
-  --crawl-depth 3 \
-  --max-pages 300 \
-  --rate-limit 500 \
-  --deep-crawl \
-  --jsonl-log reports/evidence.jsonl \
-  --save \
-  --format html,markdown,json,sarif
-```
-
-
-## v3.0 Forward Security Intelligence
-
-This build adds forward-looking assessment modules that go beyond normal header scanning:
-
-- `foresight` — predictive route and attack-path intelligence
-- `workflows` — login/reset/state-changing workflow assurance
-- `composition` — frontend supply-chain and script integrity review
-- `mutation` — authorized safe adaptive parameter validation
-
-The goal is not to claim “no vulnerabilities exist.” The goal is to answer a better professional question:
-
-> What surface was actually tested, what workflows were reached, what high-value routes were mapped, and what still needs manual role-pair validation?
-
-Strongest safe run:
-
-```bash
-docker run --rm   -v "$PWD/reports:/app/reports"   websec-sentinel   https://example.com/login   --mode validate   --authorized   --client "Client Name"   --assessment-id "AUTH-2026-001"   --tester "Assessment Team"   --scope example.com   --crawl-depth 4   --max-pages 500   --rate-limit 500   --deep-crawl   --jsonl-log reports/evidence.jsonl   --save   --format html,markdown,json,sarif
-```
-
-
-## v5.0 Engine Model
-
-This build focuses on the scanner model, not the report UI. It adds an internal request/evidence model that normalizes routes, classifies auth state, groups duplicate requests, detects soft-404 style response families, and checks whether evidence is strong enough for professional conclusions.
-
-New checks:
-
-- `enginemodel` — evaluates route diversity, duplicate request quality, login-wall dominance, parameter coverage, and soft-404/fallback behaviour.
-- `evidencequality` — evaluates whether JSONL/HAR/replay evidence, authenticated evidence, and application-layer evidence are strong enough for the declared assessment.
-
-The methodology references from the uploaded books were applied only as defensive assessment principles: lifecycle discipline, workflow mapping, evidence hygiene, repeatability, and safe validation boundaries. No destructive exploitation, stealth, persistence, credential theft, or data extraction has been added.
-
-See `docs/V5_ENGINE_MODEL_UPGRADE.md` for details.
-
-## v6.0 Book-Referenced Engine Model
-
-Version 6 improves the underlying scanner model rather than the report appearance.
-
-New engine-level features:
-
-- surface-node classification and risk weighting
-- explicit control expectation matrix
-- high-value safe test hypotheses
-- authenticated vs anonymous differential access checks
-- stronger distinction between findings, signals, hypotheses, and coverage gaps
-- improved professional honesty around what was actually tested
-
-The uploaded security books were used only as safe methodology references for assessment lifecycle, workflow mapping, evidence handling, repeatability, and validation discipline. No destructive exploitation, credential theft, persistence, stealth, malware behaviour, or data extraction was added.
-
-Useful focused run:
-
-```bash
-npm run scan -- https://example.com --checks testmodel,differential,enginemodel,evidencequality --mode validate --authorized --header "Cookie: <approved-test-session>"
-```
-
-
-## v7.0 Book-Scoped Medium-Impact Engine
-
-This version focuses on improving the scanner model rather than the report output. The new engine is constrained to the uploaded book scope and adds:
-
-- `bookscope` lifecycle gates for authorization, recon, mapping, vulnerability analysis, safe validation, evidence, and reporting
-- `stateflow` workflow/state modelling from forms and high-value transitions
-- `parammodel` parameter/input classification for identity, redirect, credential, API, file, state-change, and search surfaces
-- medium-impact threshold logic so shallow scans are called out instead of over-scored
-- stronger safe testing queues based on what was actually crawled and modelled
-
-See `docs/V7_BOOK_SCOPED_MEDIUM_IMPACT_ENGINE.md`.
-
-## v9 Exceptional Book-Scoped Product Engine
-
-v9 focuses on the scanner model rather than the UI. It adds `productengine` and `testvectors` checks that evaluate whether a run has enough scoped authorization, route/form/parameter coverage, authenticated-state separation, safe validation readiness, false-positive controls, and replayable evidence to be treated as a medium-impact product run. See `docs/V9_EXCEPTIONAL_BOOK_SCOPED_PRODUCT_ENGINE.md`.
-
-## v10 Product Engine: benchmarks, browser crawling, role testing and plugins
-
-v10 moves the project toward product evidence rather than better-looking output. The main additions are benchmark profiles, optional browser-based crawling with JavaScript execution, approved login automation, role-based comparison, safe plugin rules, false-positive grouping, and a validation matrix.
-
-Run the local benchmark fixture:
-
-```bash
-npm run benchmark
-```
-
-Build the browser-enabled Docker image:
-
-```bash
-docker build -f Dockerfile.browser -t websec-sentinel:browser .
-```
-
-Use browser crawling and approved login automation:
-
-```bash
-docker run --rm -v "$PWD/reports:/app/reports" websec-sentinel:browser \
-  https://client.example/login \
-  --mode validate \
-  --authorized \
-  --client "Client" \
-  --assessment-id "AUTH-001" \
-  --scope client.example \
-  --browser-crawl \
-  --login-url https://client.example/login \
-  --login-username "approved-test-user" \
-  --login-password "approved-test-password" \
-  --seed https://client.example/dashboard \
-  --prohibited-paths /logout,/delete,/remove,/billing,/payment \
-  --jsonl-log reports/evidence.jsonl \
-  --har reports/ledger.har.json \
-  --replay-file reports/replay-redacted.sh \
-  --save \
-  --format html,markdown,json,sarif
-```
-
-See `docs/V10_PRODUCT_BENCHMARK_BROWSER_ROLE_ENGINE.md` for details.
-
-
-## v11 confirmed product-engine upgrade
-
-This build focuses on the scanner model, not the UI. The main improvement is that benchmark and application-layer checks now move beyond route/keyword signals toward reproducible safe validation.
-
-New engine capabilities:
-
-- `vulnvalidation` confirms safe reflected-input, open-redirect, verbose-error, and role-boundary behaviours when evidence exists.
-- `proofmetrics` scores hard product evidence: benchmark profile, browser trace, role sessions, JSONL, HAR, replay, page depth, form coverage, and parameter coverage.
-- `npm run benchmark` now produces `reports/benchmark/benchmark-metrics.json` with TP/FP/FN, precision, recall, and F1 against a controlled local fixture.
-- The browser crawler now performs workflow-oriented Playwright crawling, conservative click exploration, SPA route extraction, login automation, and network/console tracing.
-- Role comparison uses approved labelled sessions and produces reproducible evidence IDs.
-
-Run the benchmark:
-
-```bash
-npm run benchmark
-cat reports/benchmark/benchmark-metrics.json
-```
-
-Browser-enabled Docker runtime:
-
-```bash
-docker build -f Dockerfile.browser -t websec-sentinel-browser .
-```
-
-See `docs/V11_CONFIRMED_PRODUCT_ENGINE.md` for details.

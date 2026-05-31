@@ -25,24 +25,25 @@ server.kill('SIGTERM');
 const json = readdirSync(out).filter(f => f.endsWith('.json') && f.startsWith('websec-')).sort().pop();
 if (json) {
   const report = JSON.parse(readFileSync(join(out, json), 'utf8'));
-  const expected = [
-    'vulnvalidation.confirmed-reflection',
-    'vulnvalidation.confirmed-open-redirect',
-    'vulnvalidation.confirmed-verbose-error',
-    'vulnvalidation.confirmed-role-boundary-risk'
-  ];
-  const actual = new Set(report.results.map(r => r.id));
-  const tp = expected.filter(e => actual.has(e));
-  const fn = expected.filter(e => !actual.has(e));
-  const validationIds = report.results.filter(r => String(r.id).startsWith('vulnvalidation.confirmed')).map(r => r.id);
-  const fp = validationIds.filter(id => !expected.includes(id));
-  const precision = validationIds.length ? tp.length / validationIds.length : 0;
-  const recall = expected.length ? tp.length / expected.length : 0;
-  const f1 = (precision + recall) ? (2 * precision * recall) / (precision + recall) : 0;
-  const metrics = { profile: 'sentinel-local-fixture', expected, truePositives: tp, falseNegatives: fn, falsePositives: fp, precision: Number(precision.toFixed(3)), recall: Number(recall.toFixed(3)), f1: Number(f1.toFixed(3)), report: json };
+  const gt = JSON.parse(readFileSync('examples/benchmarks/sentinel-local.groundtruth.json', 'utf8'));
+  const { calculateBenchmarkMetrics } = await import('../dist/core/benchmarkMetrics.js');
+  const scored = calculateBenchmarkMetrics(report.results, gt.expectedFindings || []);
+  const metrics = {
+    profile: 'sentinel-local-fixture',
+    expected: gt.expectedFindings,
+    truePositives: scored.matched,
+    falseNegatives: scored.missed,
+    falsePositiveCandidates: scored.falsePositiveCandidatesDetail,
+    surfaceMatches: scored.surfaceMatches,
+    coverageMatches: scored.coverageMatches,
+    precision: scored.precision,
+    recall: scored.recall,
+    f1: scored.f1,
+    report: json
+  };
   writeFileSync(join(out, 'benchmark-metrics.json'), JSON.stringify(metrics, null, 2));
   console.log(`\nBenchmark summary: grade=${report.summary.grade}, score=${report.summary.score}, coverage=${report.summary.coverageScore}, findings=${report.results.length}`);
-  console.log(`Benchmark proof: TP=${tp.length}, FP=${fp.length}, FN=${fn.length}, precision=${metrics.precision}, recall=${metrics.recall}, f1=${metrics.f1}`);
-  if (fn.length) process.exitCode = 1;
+  console.log(`Benchmark proof: TP=${scored.truePositives}, FP candidates=${scored.falsePositiveCandidates}, FN=${scored.falseNegatives}, precision=${metrics.precision}, recall=${metrics.recall}, f1=${metrics.f1}`);
+  if (scored.falseNegatives) process.exitCode = 1;
 }
 process.exit(result.status ?? process.exitCode ?? 0);
