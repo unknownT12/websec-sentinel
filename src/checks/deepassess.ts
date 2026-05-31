@@ -101,10 +101,11 @@ export const deepAssessmentCheck: Check = {
           id: "deepassess.auth-bypass-reachability-signal",
           check: "deepassess",
           category: "Deep Access Control",
-          status: "fail",
+          status: "warn",
+          kind: "risk-signal",
           severity: "high",
           confidence: "strong",
-          title: "Authenticated surface may be reachable without authentication",
+          title: "Authenticated surface reachability signal requires validation",
           detail: "Anonymous control requests returned successful, similar content for authenticated high-value routes.",
           impact: "This is a strong authorization-bypass signal. It can expose protected content if manual verification confirms sensitive data in the anonymous response.",
           remediation: "Enforce authentication before route handlers and API controllers, deny by default, and add regression tests for anonymous access to every protected route.",
@@ -119,22 +120,23 @@ export const deepAssessmentCheck: Check = {
 
     if (objectUrls.length) {
       const roleCount = context.options.roleHeaders.length;
-      const severity = roleCount >= 2 ? "medium" : "high";
       results.push(finding({
         id: roleCount >= 2 ? "deepassess.idor-candidates-with-role-coverage" : "deepassess.idor-candidates-need-role-coverage",
         check: "deepassess",
         category: "Object-Level Authorization",
-        status: roleCount >= 2 ? "warn" : "fail",
-        severity,
+        status: "warn",
+        kind: roleCount >= 2 ? "risk-signal" : "coverage-gap",
+        severity: roleCount >= 2 ? "medium" : "low",
         confidence: "strong",
-        title: roleCount >= 2 ? "Object-ID routes queued for role/object authorization review" : "IDOR-prone routes observed without enough role coverage",
-        detail: `${objectUrls.length} high-value URL(s) contain object identifiers. ${roleCount >= 2 ? "Role sessions were supplied for differential follow-up." : "At least two approved role sessions are required for meaningful IDOR validation."}`,
-        impact: "Object-ID routes are common locations for IDOR and horizontal privilege flaws, especially in student, grade, profile, report, and API surfaces.",
+        title: roleCount >= 2 ? "Object-ID routes queued for role/object authorization review" : "Object-ID routes need role/object authorization coverage",
+        detail: `${objectUrls.length} high-value URL(s) contain object identifiers. ${roleCount >= 2 ? "Role sessions were supplied for differential follow-up, but expected object ownership still needs human policy context." : "At least two approved role sessions are required before this can be assessed as an IDOR finding."}`,
+        impact: "Object-ID routes are common locations for IDOR and horizontal privilege flaws, but route shape alone is not proof of a vulnerability.",
         remediation: "Validate every object read/write with owner and role checks server-side. Test with approved low-privilege accounts that own different fixture records.",
         evidence: objectUrls.slice(0, context.options.evidenceLimit).map((url) => ({ url, observed: "object identifier in high-value route" })),
         owasp: ["A01:2021 Broken Access Control"],
         cwe: ["CWE-639", "CWE-863"],
         exploitability: "none",
+        falsePositiveNotes: "This is inventory/coverage evidence only. Treat it as a confirmed IDOR only after role-pair tests prove access to an object outside the expected ownership policy.",
       }));
     }
 
@@ -157,9 +159,10 @@ export const deepAssessmentCheck: Check = {
           check: "deepassess",
           category: "Object-Level Authorization",
           status: "warn",
-          severity: "high",
+          kind: "risk-signal",
+          severity: "medium",
           confidence: "strong",
-          title: "Object routes may not enforce role/object boundaries",
+          title: "Object route role-boundary signal requires policy validation",
           detail: "Approved role-labelled sessions received successful responses from object-ID routes.",
           impact: "This may indicate IDOR or role-boundary weakness if the roles should not share those fixture objects.",
           remediation: "Confirm expected object ownership policy and enforce object-level authorization on every route and API resolver.",

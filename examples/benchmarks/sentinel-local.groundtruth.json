@@ -11,9 +11,9 @@
     { "id": "error", "description": "Verbose error route", "urlPattern": "/error|debug", "parameter": "debug", "required": true }
   ],
   "expectedFindings": [
-    { "id": "confirmed-reflection", "title": "Confirmed reflected input", "resultIds": ["vulnvalidation.confirmed-reflection"], "urlPattern": "/search|q=", "parameter": "q", "required": true },
-    { "id": "confirmed-open-redirect", "title": "Confirmed open redirect", "resultIds": ["vulnvalidation.confirmed-open-redirect"], "urlPattern": "/redirect|next=", "parameter": "next", "required": true },
-    { "id": "confirmed-verbose-error", "title": "Confirmed verbose error", "resultIds": ["vulnvalidation.confirmed-verbose-error"], "urlPattern": "/error|debug", "parameter": "debug", "required": true },
-    { "id": "confirmed-role-boundary-risk", "title": "Confirmed role boundary risk", "resultIds": ["vulnvalidation.confirmed-role-boundary-risk"], "urlPattern": "/dashboard|/admin", "required": true }
+    { "id": "confirmed-reflection", "title": "Confirmed reflected input", "resultIds": ["vulnvalidation.confirmed-reflection"], "metricType": "vulnerability", "urlPattern": "/search|q=", "parameter": "q", "required": true },
+    { "id": "confirmed-open-redirect", "title": "Confirmed open redirect", "resultIds": ["vulnvalidation.confirmed-open-redirect"], "metricType": "vulnerability", "urlPattern": "/redirect|next=", "parameter": "next", "required": true },
+    { "id": "confirmed-verbose-error", "title": "Confirmed verbose error", "resultIds": ["vulnvalidation.confirmed-verbose-error"], "metricType": "vulnerability", "urlPattern": "/error|debug", "parameter": "debug", "required": true },
+    { "id": "confirmed-role-boundary-risk", "title": "Confirmed role boundary risk", "resultIds": ["vulnvalidation.confirmed-role-boundary-risk"], "metricType": "vulnerability", "urlPattern": "/dashboard|/admin", "required": true }
   ]
 }

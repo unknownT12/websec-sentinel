@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://websec-sentinel.local/schemas/report.schema.json",
+  "title": "WebSec Sentinel Report",
+  "type": "object",
+  "required": ["tool", "version", "target", "timestamp", "mode", "authorization", "summary", "executive", "results", "surface", "quality"],
+  "properties": {
+    "tool": { "type": "string" },
+    "version": { "type": "string" },
+    "target": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "mode": { "enum": ["passive", "standard", "validate"] },
+    "authorization": {
+      "type": "object",
+      "required": ["authorized", "scope", "authenticated"],
+      "properties": {
+        "authorized": { "type": "boolean" },
+        "client": { "type": "string" },
+        "assessmentId": { "type": "string" },
+        "tester": { "type": "string" },
+        "scope": { "type": "array", "items": { "type": "string" } },
+        "authenticated": { "type": "boolean" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["critical", "high", "medium", "low", "info", "passed", "score", "weightedRisk", "coverageScore", "grade", "durationMs", "topCategories"],
+      "properties": {
+        "critical": { "type": "integer" },
+        "high": { "type": "integer" },
+        "medium": { "type": "integer" },
+        "low": { "type": "integer" },
+        "info": { "type": "integer" },
+        "passed": { "type": "integer" },
+        "score": { "type": "integer" },
+        "weightedRisk": { "type": "integer" },
+        "coverageScore": { "type": "integer" },
+        "grade": { "enum": ["A", "B", "C", "D", "F"] },
+        "durationMs": { "type": "integer" },
+        "topCategories": { "type": "array" }
+      }
+    },
+    "executive": { "type": "object" },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "check", "category", "status", "severity", "confidence", "title", "detail", "impact", "remediation"],
+        "properties": {
+          "id": { "type": "string" },
+          "check": { "type": "string" },
+          "category": { "type": "string" },
+          "status": { "enum": ["pass", "fail", "warn", "info"] },
+          "kind": { "enum": ["confirmed-vulnerability", "risk-signal", "coverage-gap", "scanner-diagnostic", "informational", "pass"] },
+          "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+          "confidence": { "enum": ["confirmed", "strong", "moderate", "low"] },
+          "exploitability": { "enum": ["none", "theoretical", "practical", "validated"] },
+          "title": { "type": "string" },
+          "detail": { "type": "string" },
+          "impact": { "type": "string" },
+          "remediation": { "type": "string" },
+          "evidence": { "type": "array" }
+        }
+      }
+    },
+    "surface": { "type": "object" },
+    "quality": { "type": "object" }
+  }
+}

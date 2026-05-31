@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -12,6 +12,7 @@ import { applyTriage, filterMetaFindings } from "../dist/core/project.js";
 import { discoverApis } from "../dist/core/apiDiscovery.js";
 import { fingerprintFor, reduceFalsePositiveNoise } from "../dist/core/falsepositives.js";
 import { deepAssessmentCheck } from "../dist/checks/deepassess.js";
+import { sameOriginOnly } from "../dist/core/http.js";
 
 test("parseCli requires explicit authorization for validate mode", () => {
   assert.throws(
@@ -153,7 +154,11 @@ test("deepassess flags object-ID routes that need role coverage", async () => {
   });
 
   const results = await deepAssessmentCheck.run(context);
-  assert.ok(results.some((r) => r.id === "deepassess.idor-candidates-need-role-coverage"));
+  const result = results.find((r) => r.id === "deepassess.idor-candidates-need-role-coverage");
+  assert.ok(result);
+  assert.equal(result.kind, "coverage-gap");
+  assert.equal(result.severity, "low");
+  assert.equal(result.exploitability, "none");
 });
 
 test("deepassess identifies CSRF marker gaps on state-changing forms", async () => {
@@ -355,6 +360,34 @@ test("benchmark metrics score actual result IDs, not just reachable surfaces", (
   assert.equal(metrics.f1, 0.5);
 });
 
+test("benchmark metrics separate vulnerability recall from surface and coverage matches", () => {
+  const results = [
+    { id: "api.route-hints-observed", title: "API routes", severity: "info", status: "info" },
+    { id: "externalbenchmark.evidence-detail", title: "Reachability", severity: "info", status: "info" },
+    { id: "headers.missing-csp", title: "Missing CSP", severity: "medium", status: "warn" },
+  ];
+  const expected = [
+    { id: "api-surface", title: "API surface", resultIds: ["api.route-hints-observed"], metricType: "surface", required: true },
+    { id: "benchmark-readiness", title: "Readiness", resultIds: ["externalbenchmark.evidence-detail"], metricType: "coverage", required: true },
+    { id: "confirmed-reflection", title: "Confirmed reflection", resultIds: ["vulnvalidation.confirmed-reflection"], metricType: "vulnerability", required: true },
+  ];
+
+  const metrics = calculateBenchmarkMetrics(results, expected);
+
+  assert.equal(metrics.truePositives, 0);
+  assert.equal(metrics.falseNegatives, 1);
+  assert.equal(metrics.falsePositiveCandidates, 1);
+  assert.equal(metrics.surfaceMatches.length, 1);
+  assert.equal(metrics.coverageMatches.length, 1);
+});
+
+test("scope allows approved hosts without requiring exact origin", () => {
+  const target = new URL("https://app.example.com");
+
+  assert.equal(sameOriginOnly(target, new URL("https://api.example.com/v1"), ["app.example.com", "api.example.com"]), true);
+  assert.equal(sameOriginOnly(target, new URL("https://evil.example.net"), ["app.example.com", "api.example.com"]), false);
+});
+
 test("markdown reports expose finding kind", () => {
   const report = {
     tool: "WebSec Sentinel",
@@ -400,6 +433,17 @@ test("markdown reports expose finding kind", () => {
   };
 
   const md = renderReport(report, "markdown");
+  assert.match(md, /Disclaimer:/);
+  assert.match(md, /## Findings by type/);
   assert.match(md, /\| Severity \| Status \| Kind \|/);
   assert.match(md, /coverage-gap/);
+});
+
+test("report schema is committed with required product contract fields", () => {
+  const schema = JSON.parse(readFileSync("schemas/report.schema.json", "utf8"));
+
+  assert.ok(schema.required.includes("summary"));
+  assert.ok(schema.required.includes("results"));
+  assert.ok(schema.properties.results.items.required.includes("kind") === false);
+  assert.deepEqual(schema.properties.results.items.properties.kind.enum, ["confirmed-vulnerability", "risk-signal", "coverage-gap", "scanner-diagnostic", "informational", "pass"]);
 });

@@ -61,7 +61,7 @@ export function filterMetaFindings(results: ScanResult[], includeMetaFindings: b
   return results.filter((result) => {
     if (result.status === "pass" || result.status === "info") return true;
     if (result.kind !== "coverage-gap") return true;
-    return /coverage contract|no application pages|browser crawl|external benchmark/i.test(result.title + " " + result.id);
+    return /coverage contract|no application pages|browser crawl|external benchmark|deepassess\.idor/i.test(result.title + " " + result.id);
   });
 }
 

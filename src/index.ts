@@ -51,7 +51,7 @@ import { surfaceCheck } from "./checks/surface.js";
 import { tlsCheck } from "./checks/tls.js";
 import { buildReport, printReport, saveReports, shouldFail } from "./reporters/report.js";
 import { compareBaseline } from "./core/baseline.js";
-import { getHttpObservations } from "./core/http.js";
+import { getHttpObservations, resetHttpState } from "./core/http.js";
 import { saveHarLike, saveReplayFile } from "./core/evidence.js";
 import { reduceFalsePositiveNoise } from "./core/falsepositives.js";
 import { applyTriage, filterMetaFindings, loadTriage, projectBaseline, projectPath, saveProjectReport, writeSummaryFile, writeTriageTemplate } from "./core/project.js";
@@ -128,6 +128,7 @@ async function main(): Promise<void> {
   }
 
   const targetUrl = new URL(options.target);
+  resetHttpState();
   const unknownChecks = options.checks.filter((c) => !CHECKS[c]);
   if (unknownChecks.length) throw new Error(`Unknown check(s): ${unknownChecks.join(", ")}. Available: ${Object.keys(CHECKS).join(", ")}`);
 

@@ -57,14 +57,21 @@ const scanArgs = [
   '--format', 'json,markdown,sarif',
   '--fail-on', arg('--fail-on', 'critical'),
 ];
+if (arg('--checks')) scanArgs.push('--checks', arg('--checks'));
 if (process.argv.includes('--browser-crawl')) scanArgs.push('--browser-crawl');
 if (process.argv.includes('--deep-crawl')) scanArgs.push('--deep-crawl');
+if (process.argv.includes('--browser-headful')) scanArgs.push('--browser-headful');
+if (arg('--browser-channel')) scanArgs.push('--browser-channel', arg('--browser-channel'));
+if (arg('--browser-executable')) scanArgs.push('--browser-executable', arg('--browser-executable'));
 for (const s of all('--seed')) scanArgs.push('--seed', s);
 for (const h of all('--header')) scanArgs.push('--header', h);
 for (const rh of all('--role-header')) scanArgs.push('--role-header', rh);
 if (arg('--login-url')) scanArgs.push('--login-url', arg('--login-url'));
 if (arg('--login-username')) scanArgs.push('--login-username', arg('--login-username'));
 if (arg('--login-password')) scanArgs.push('--login-password', arg('--login-password'));
+if (arg('--login-username-selector')) scanArgs.push('--login-username-selector', arg('--login-username-selector'));
+if (arg('--login-password-selector')) scanArgs.push('--login-password-selector', arg('--login-password-selector'));
+if (arg('--login-submit-selector')) scanArgs.push('--login-submit-selector', arg('--login-submit-selector'));
 if (arg('--rules-dir')) scanArgs.push('--rules-dir', arg('--rules-dir'));
 if (arg('--prohibited-paths')) scanArgs.push('--prohibited-paths', arg('--prohibited-paths'));
 
@@ -88,6 +95,8 @@ const metrics = {
   f1: scored.f1,
   matched: scored.matched,
   missed: scored.missed,
+  surfaceMatches: scored.surfaceMatches,
+  coverageMatches: scored.coverageMatches,
   falsePositiveCandidates: scored.falsePositiveCandidatesDetail,
   artifacts: { report: join(out, reportFile), reachability: evidenceOut, har, replay, jsonl },
   interpretation: scored.f1 >= 0.8 ? 'strong external benchmark proof for this target/version' : scored.f1 >= 0.6 ? 'moderate external benchmark proof; improve missed detections and false-positive control' : 'weak external benchmark proof; product claim not yet supported',

@@ -19,6 +19,7 @@ type GroundTruthFinding = {
   category?: string;
   severity?: string;
   validationType?: "reflection" | "open-redirect" | "verbose-error" | "role-boundary" | "access-control" | "csrf" | "auth" | "headers";
+  metricType?: "vulnerability" | "surface" | "coverage";
   urlPattern?: string;
   parameter?: string;
   required?: boolean;
